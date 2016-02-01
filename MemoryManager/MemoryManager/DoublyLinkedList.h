@@ -6,22 +6,85 @@ class DoublyLinkedList
 {
 
 private:
-	Node<T> *head;
+	Node<T> *firstNode;
+	Node<T> *lastNode;
 	size_t size;
 
 public:
-	DoublyLinkedList() :size(0), head(nullptr){}
+	DoublyLinkedList():firstNode(NULL), lastNode(NULL), size(0){}
 	~DoublyLinkedList()
 	{
-		if (this->head)
+		if (this->firstNode)
 		{
-			delete head;
+			delete firstNode;
 		}
 	}
 
 public:
+	void insertAfter(Node<T> *node, Node<T> *newNode)
+	{
+		newNode->previous = node;
+		newNode->next = node->next;
+		if (!node->next)
+		{
+			lastNode = newNode;
+		}
+		else
+		{
+			node->next->previous = newNode;
+		}
+		node->next = newNode;
+	}
 
-	void insertAtHead(const T& x)
+	void insertBefore(Node<T> *node, Node<T> *newNode)
+	{
+		newNode->previous = node->previous;
+		newNode->next = node;
+		if (!node->previous)
+		{
+			firstNode = newNode;
+		}
+		else
+		{
+			node->previous->next = newNode;
+		}
+		node->previous = newNode;
+	}
+
+	void insertAtBeginning(Node<T> *newNode)
+	{
+		if (!firstNode)
+		{
+			firstNode = newNode;
+			lastNode = newNode;
+			newNode->previous = NULL;
+			newNode->next = NULL;
+		}
+		else
+			insertBefore(firstNode, newNode);
+	}
+
+	void insertAtEnd(Node<T> *newNode)
+	{
+		if (!lastNode)
+			insertAtBeginning(newNode);
+		else
+			insertAfter(lastNode, newNode);
+	}
+
+	void remove(Node<T> *node)
+	{
+		if (!node->previous)
+			firstNode = node->next;
+		else
+			node->previous->next = node->next;
+		if (!node->next)
+			lastNode = node->previous;
+		else
+			node->next->previous = node->previous;
+	}
+
+	/*void insertAtHead(const T& x)
 	{
 		Node<T> *newNode = new Node<T>(x, NULL, NULL);
 		if (head == NULL)
@@ -48,13 +111,14 @@ public:
 		}
 		temp->next = newNode;
 		newNode->previous = temp;
-	}
+	}*/
 
 	void print() const
 	{
-		Node<T>* temp = head;
+		Node<T>* temp = firstNode;
 		std::cout << "Forward: ";
-		while (temp != NULL) {
+		while (temp) 
+		{
 			std::cout << temp->data;
 			temp = temp->next;
 		}

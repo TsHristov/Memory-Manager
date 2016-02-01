@@ -2,12 +2,20 @@
 template<class T>
 struct Node
 {
+
+	// we may not need the data ,as a free block doesn`t need one
 	T data;
 	Node *previous;
 	Node *next;
 
 public:
 	Node() :previous(NULL), next(NULL){}
+	Node(const T& data)
+	{
+		this->data = data;
+		this->previous = NULL;
+		this->next = NULL;
+	}
 	Node(const T& data, Node<T> *previous, Node<T> *next)
 	{
 		this->data = data;
