@@ -1,16 +1,25 @@
 #include <iostream>
-#include "Block.h"
+#include "DoublyLinkedList.h"
+#define CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 
 int main()
 {
-	//std::cout << sizeof(Block) << "\n";
-	//std::cout << sizeof(Block<double>) << "\n";
-	/*int *pArr1 = (int*)MemoryManager::Malloc(100 * sizeof(int));
-	int *pArr2 = (int*)MemoryManager::Malloc(100 * sizeof(int));
-	pArr1[0] = pArr2[0] = 10;
-	MemoryManager::Free(pArr1);
-	MemoryManager::Free(pArr2);*/
-	int size = 4;
+	{
+		DoublyLinkedList<int> a;
+		//int c = 4;
+		a.insertAtHead(1);
+		a.insertAtHead(2);
+		a.insertAtHead(3);
+		a.insertAtHead(4);
+
+		a.insertAtTail(1);
+		a.insertAtTail(2);
+		a.insertAtTail(3);
+		a.insertAtTail(4);
+		a.print();
+	}_CrtDumpMemoryLeaks();
 
 	return 0;
 }
