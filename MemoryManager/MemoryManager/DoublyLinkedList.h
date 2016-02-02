@@ -1,4 +1,5 @@
 #pragma once
+#include "Iterator.h"
 #include "Node.h"
 
 template<class T>
@@ -21,107 +22,140 @@ public:
 	}
 
 public:
-	void insertAfter(Node<T> *node, Node<T> *newNode)
-	{
-		newNode->previous = node;
-		newNode->next = node->next;
-		if (!node->next)
-		{
-			lastNode = newNode;
-		}
-		else
-		{
-			node->next->previous = newNode;
-		}
-		node->next = newNode;
-	}
+	void insertAfter(Node<T>*, Node<T>*);
 
-	void insertBefore(Node<T> *node, Node<T> *newNode)
-	{
-		newNode->previous = node->previous;
-		newNode->next = node;
-		if (!node->previous)
-		{
-			firstNode = newNode;
-		}
-		else
-		{
-			node->previous->next = newNode;
-		}
-		node->previous = newNode;
-	}
+	void insertBefore(Node<T>*, Node<T>*);
 
-	void insertAtBeginning(Node<T> *newNode)
-	{
-		if (!firstNode)
-		{
-			firstNode = newNode;
-			lastNode = newNode;
-			newNode->previous = NULL;
-			newNode->next = NULL;
-		}
-		else
-			insertBefore(firstNode, newNode);
-	}
+	void insertAtBeginning(Node<T>*);
 
-	void insertAtEnd(Node<T> *newNode)
-	{
-		if (!lastNode)
-			insertAtBeginning(newNode);
-		else
-			insertAfter(lastNode, newNode);
-	}
+	void insertAtEnd(Node<T>*);
 
-	void remove(Node<T> *node)
-	{
-		if (!node->previous)
-			firstNode = node->next;
-		else
-			node->previous->next = node->next;
-		if (!node->next)
-			lastNode = node->previous;
-		else
-			node->next->previous = node->previous;
-	}
+	void remove(Node<T>*);
 
-	/*void insertAtHead(const T& x)
-	{
-		Node<T> *newNode = new Node<T>(x, NULL, NULL);
-		if (head == NULL)
-		{
-			head = newNode;
-			return;
-		}
-		head->previous = newNode;
-		newNode->next = head;
-		head = newNode;
-	}
+	void print();
 
-	void insertAtTail(const T& x) 
-	{
-		Node<T>* temp = head;
-		Node<T>* newNode = new Node<T>(x, NULL, NULL);
-		if (head == NULL) {
-			head = newNode;
-			return;
-		}
-		while (temp->next != NULL)
-		{
-			temp = temp->next; // Go To last Node
-		}
-		temp->next = newNode;
-		newNode->previous = temp;
-	}*/
+public:
+	Iterator<T> getIterator();
+	Iterator<T> getReverseIterator();
 
-	void print() const
-	{
-		Node<T>* temp = firstNode;
-		std::cout << "Forward: ";
-		while (temp) 
-		{
-			std::cout << temp->data;
-			temp = temp->next;
-		}
-		std::cout << "\n";
-	}
+	void printWithIterator();
+	void printWithReverseIterator();
 };
+
+
+template<class T>
+void insertAfter(Node<T> *node, Node<T> *newNode)
+{
+	newNode->previous = node;
+	newNode->next = node->next;
+	if (!node->next)
+	{
+		lastNode = newNode;
+	}
+	else
+	{
+		node->next->previous = newNode;
+	}
+	node->next = newNode;
+}
+
+
+template<class T>
+void insertBefore(Node<T> *node, Node<T> *newNode)
+{
+	newNode->previous = node->previous;
+	newNode->next = node;
+	if (!node->previous)
+	{
+		firstNode = newNode;
+	}
+	else
+	{
+		node->previous->next = newNode;
+	}
+	node->previous = newNode;
+}
+
+
+template<class T>
+void insertAtBeginning(Node<T> *newNode)
+{
+	if (!firstNode)
+	{
+		firstNode = newNode;
+		lastNode = newNode;
+		newNode->previous = NULL;
+		newNode->next = NULL;
+	}
+	else
+		insertBefore(firstNode, newNode);
+}
+
+
+template<class T>
+void insertAtEnd(Node<T> *newNode)
+{
+	if (!lastNode)
+		insertAtBeginning(newNode);
+	else
+		insertAfter(lastNode, newNode);
+}
+
+
+template<class T>
+void remove(Node<T> *node)
+{
+	if (!node->previous)
+		firstNode = node->next;
+	else
+		node->previous->next = node->next;
+	if (!node->next)
+		lastNode = node->previous;
+	else
+		node->next->previous = node->previous;
+}
+
+template<class T>
+void print()
+{
+	Node<T>* temp = firstNode;
+	std::cout << "Forward: ";
+	while (temp)
+	{
+		std::cout << temp->data;
+		temp = temp->next;
+	}
+	std::cout << "\n";
+}
+
+template<class T>
+Iterator<T> getIterator()
+{
+	return Iterator<T>(this->firstNode);
+}
+
+
+template<class T>
+Iterator<T> getReverseIterator()
+{
+	return Iterator<T>(this->lastNode);
+}
+
+/*template<class T>
+void printWithIterator()
+{
+	for (Iterator<T> it = this->getIterator(); it.next(); it.end())
+	{
+		std::cout << it.getCurrent() << '\n';
+	}
+}*/
+
+
+/*template<class T>
+void printWithReverseIterator()
+{
+	for (Iterator<T> it = this->getReverseIterator(); it.previous(); it.end())
+	{
+		std::cout << it.getCurrent() << '\n';
+	}
+}*/

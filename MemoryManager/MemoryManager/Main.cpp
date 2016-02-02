@@ -5,21 +5,51 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
+struct Block
+{
+	size_t header;
+	int data;
+	size_t footer;
+
+	Block(const int& data)
+	{
+		this->data = data;
+		this->header = this->footer = sizeof(data);
+	}
+};
+
+
 int main()
 {
 	{
-		DoublyLinkedList<int> a;
-		Node<int> *newNode = new Node<int>(1);
-		a.insertAtBeginning(newNode);
-		Node<int> *newNode2 = new Node<int>(2);
-		a.insertAfter(newNode, newNode2);
-		Node<int> *newNode3 = new Node<int>(3);
-		a.insertBefore(newNode, newNode3);
-		Node<int> *newNode4 = new Node<int>(4);
-		a.insertAfter(newNode3, newNode4);
-		a.remove(newNode4);
-		//delete newNode4;
-		a.print();
+		char *memblock = new char[1000];
+		std::cout << "First: " << &memblock << '\n';
+		
+		Block *block1 = new Block(1);
+		memcpy(&memblock, &block1, sizeof(block1));
+
+		char *a = memblock;
+		a += sizeof(block1);
+		std::cout << "After block1: " << &a << '\n';
+		Block *one = (Block*)(memblock + a);
+		std::cout << "block1: " << one->data << '\n';
+
+		Block *block2 = new Block(2);
+		memcpy(&memblock, &block2, sizeof(block2));
+
+		char *b = memblock;
+		b += sizeof(block2);
+		std::cout << "After block2: " << &b << '\n';
+
+		Block *block3 = new Block(3);
+		memcpy(&memblock, &block3, sizeof(block3));
+
+		char *c = memblock;
+		c += sizeof(block3);
+		std::cout << "After block3: " << &c << '\n';
+
+		std::cout << "Memblock at address: " << &memblock << '\n';
+		
 	}_CrtDumpMemoryLeaks();
 
 	return 0;
