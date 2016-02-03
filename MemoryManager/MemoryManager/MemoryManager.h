@@ -3,6 +3,7 @@
 class MemoryManager
 {
 private:
+	//DoublyLinkedList<MemoryBlock<Node<int>>> freeBlocks;
 	char *memblock;
 
 public:
@@ -16,15 +17,6 @@ public:
 	}
 
 public:
-	void *Malloc(size_t size);
-	void free(void *p);
+	void *Malloc(size_t);
+	//void free(void*);
 };
-
-
-template<class T>
-void *Malloc(size_t size)
-{
-	memcpy(memblock, &size, sizeof(size_t));
-	
-	return memblock;
-}

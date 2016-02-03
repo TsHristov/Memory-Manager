@@ -1,6 +1,6 @@
 #include <iostream>
-#include "DoublyLinkedList.h"
-#include "Node.h"
+//#include "DoublyLinkedList.h"
+//#include "Node.h"
 #include "MemoryManager.h"
 #define CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -10,7 +10,12 @@
 int main()
 {
 	{
-		char *memblock = new char[1000]; //1000 bytes available now
+		MemoryManager mngr;
+
+		int *pArr1 = (int*)mngr.Malloc(2 * sizeof(int));
+		*pArr1 = 457;
+
+		/*char *memblock = new char[1000];
 		std::cout << "Address of memblock: " << &memblock << "\n";
 
 		size_t size = 8;
@@ -21,7 +26,7 @@ int main()
 		size_t *sz = (size_t*)memblock;
 		std::cout << *sz << "\n";
 
-		memcpy(memblock + size *sizeof(char), &size, sizeof(size_t));
+		memcpy(memblock + size * sizeof(char), &size, sizeof(size_t));
 
 		size_t *szg = (size_t*)(memblock + size*sizeof(char));
 		std::cout << *szg << "\n";
@@ -29,7 +34,16 @@ int main()
 		int *pArr1 = (int*)ptr;
 		*pArr1 = 457;
 
-		delete[] memblock;
+		double *pArr2 = (double*)ptr;
+		*pArr2 = 333;
+
+		double *p = (double*)(memblock + sizeof(size_t));
+		std::cout << *p << "\n";
+
+		size_t *b = (size_t*)(memblock + sizeof(size_t));
+		std::cout << *b << "\n";
+
+		delete[] memblock;*/
 	}_CrtDumpMemoryLeaks();
 
 	return 0;
