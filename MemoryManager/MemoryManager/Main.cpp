@@ -1,55 +1,35 @@
 #include <iostream>
 #include "DoublyLinkedList.h"
 #include "Node.h"
+#include "MemoryManager.h"
 #define CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
-
-struct Block
-{
-	size_t header;
-	int data;
-	size_t footer;
-
-	Block(const int& data)
-	{
-		this->data = data;
-		this->header = this->footer = sizeof(data);
-	}
-};
 
 
 int main()
 {
 	{
-		char *memblock = new char[1000];
-		std::cout << "First: " << &memblock << '\n';
-		
-		Block *block1 = new Block(1);
-		memcpy(&memblock, &block1, sizeof(block1));
+		char *memblock = new char[1000]; //1000 bytes available now
+		std::cout << "Address of memblock: " << &memblock << "\n";
 
-		char *a = memblock;
-		a += sizeof(block1);
-		std::cout << "After block1: " << &a << '\n';
-		Block *one = (Block*)(memblock + a);
-		std::cout << "block1: " << one->data << '\n';
+		size_t size = 8;
 
-		Block *block2 = new Block(2);
-		memcpy(&memblock, &block2, sizeof(block2));
+		memcpy(memblock, &size, sizeof(size_t));
 
-		char *b = memblock;
-		b += sizeof(block2);
-		std::cout << "After block2: " << &b << '\n';
+		void *ptr = memblock + sizeof(size_t);
+		size_t *sz = (size_t*)memblock;
+		std::cout << *sz << "\n";
 
-		Block *block3 = new Block(3);
-		memcpy(&memblock, &block3, sizeof(block3));
+		memcpy(memblock + size *sizeof(char), &size, sizeof(size_t));
 
-		char *c = memblock;
-		c += sizeof(block3);
-		std::cout << "After block3: " << &c << '\n';
+		size_t *szg = (size_t*)(memblock + size*sizeof(char));
+		std::cout << *szg << "\n";
 
-		std::cout << "Memblock at address: " << &memblock << '\n';
-		
+		int *pArr1 = (int*)ptr;
+		*pArr1 = 457;
+
+		delete[] memblock;
 	}_CrtDumpMemoryLeaks();
 
 	return 0;
