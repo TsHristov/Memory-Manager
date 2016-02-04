@@ -10,40 +10,25 @@
 int main()
 {
 	{
-		MemoryManager mngr;
+		MemoryManager mngr(1024);
 
-		int *pArr1 = (int*)mngr.Malloc(2 * sizeof(int));
-		*pArr1 = 457;
+		size_t blockSize = 10 * sizeof(int);
 
-		/*char *memblock = new char[1000];
-		std::cout << "Address of memblock: " << &memblock << "\n";
+		int *p = (int*)mngr.Malloc(blockSize);
+		*p = 3;
 
-		size_t size = 8;
+		//char *k = (char*)mngr.Malloc(sizeof(char));
+		//*k = 'd';
 
-		memcpy(memblock, &size, sizeof(size_t));
+		//long long *g = (long long*)mngr.Malloc(4 * sizeof(long long));
+		//*g = 800;
 
-		void *ptr = memblock + sizeof(size_t);
-		size_t *sz = (size_t*)memblock;
-		std::cout << *sz << "\n";
+		std::cout << "Value of header: " <<  *(size_t*)((char*)p - sizeof(size_t*)) << "\n";
 
-		memcpy(memblock + size * sizeof(char), &size, sizeof(size_t));
+		size_t valueOfFooter = *(size_t*)((char*)p + blockSize - sizeof(size_t*));
+		
 
-		size_t *szg = (size_t*)(memblock + size*sizeof(char));
-		std::cout << *szg << "\n";
-
-		int *pArr1 = (int*)ptr;
-		*pArr1 = 457;
-
-		double *pArr2 = (double*)ptr;
-		*pArr2 = 333;
-
-		double *p = (double*)(memblock + sizeof(size_t));
-		std::cout << *p << "\n";
-
-		size_t *b = (size_t*)(memblock + sizeof(size_t));
-		std::cout << *b << "\n";
-
-		delete[] memblock;*/
+		std::cout << "valueOfFooter: " << (valueOfFooter & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
 	}_CrtDumpMemoryLeaks();
 
 	return 0;

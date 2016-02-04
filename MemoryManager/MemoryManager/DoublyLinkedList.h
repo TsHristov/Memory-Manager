@@ -12,7 +12,7 @@ private:
 	size_t size;
 
 public:
-	DoublyLinkedList():firstNode(NULL), lastNode(NULL), size(0){}
+	DoublyLinkedList() :firstNode(NULL), lastNode(NULL), size(0){}
 	~DoublyLinkedList()
 	{
 		if (this->firstNode)
@@ -144,18 +144,18 @@ Iterator<T> getReverseIterator()
 /*template<class T>
 void printWithIterator()
 {
-	for (Iterator<T> it = this->getIterator(); it.next(); it.end())
-	{
-		std::cout << it.getCurrent() << '\n';
-	}
+for (Iterator<T> it = this->getIterator(); it.next(); it.end())
+{
+std::cout << it.getCurrent() << '\n';
+}
 }*/
 
 
 /*template<class T>
 void printWithReverseIterator()
 {
-	for (Iterator<T> it = this->getReverseIterator(); it.previous(); it.end())
-	{
-		std::cout << it.getCurrent() << '\n';
-	}
+for (Iterator<T> it = this->getReverseIterator(); it.previous(); it.end())
+{
+std::cout << it.getCurrent() << '\n';
+}
 }*/
