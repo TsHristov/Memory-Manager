@@ -14,7 +14,7 @@ public:
 	}
 
 public:
-	T const & getCurrent() const
+	T& getCurrent()
 	{
 		return this->pCurrent->data;
 	}
@@ -26,7 +26,7 @@ public:
 	{
 		if (this->pCurrent)
 		{
-			this->pCurrent = this->pCurrent->pNext;
+			this->pCurrent = this->pCurrent->next;
 		}
 	}
 	void previous()
@@ -38,6 +38,7 @@ public:
 	}
 	bool end() const
 	{
-		return this->pCurrent->next == NULL || this->pCurrent->previous == NULL;
+		//return this->pCurrent == NULL || this->pCurrent->next == NULL || this->pCurrent->previous == NULL;
+		return this->pCurrent == NULL;
 	}
 };

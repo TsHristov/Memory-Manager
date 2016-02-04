@@ -1,13 +1,14 @@
 #pragma once
 #include <iostream>
 #include "DoublyLinkedList.h"
-#include "Node.h"
 
 class MemoryManager
 {
 private:
 	char *memblock;
 	DoublyLinkedList<char*> freeBlocks;
+	Node<char*> *block;
+	size_t blockSize;
 
 public:
 	/***
@@ -18,29 +19,33 @@ public:
 	*/
 	MemoryManager(size_t size)
 	{
-		memblock = new char[size];
+		blockSize = size;
+		
+		//Allocate big chunk of memory
+		memblock = new char[blockSize];
+
+		//Put header
 		size_t *header = (size_t*)memblock;
-		*header = size;
+		*header = blockSize;
 
-		//Allocation status: 0
-
-		size_t *footer = (size_t*)(memblock + sizeof(size_t*)+(size - sizeof(size_t*)) * sizeof(char));
-		*footer = size;
-
-		// Put the pointer of the first free block after the header of it.
-		Node<char*> *firstBlock = (Node<char*>*)(memblock + sizeof(size_t*));
-		firstBlock->data = memblock + sizeof(size_t*);
+		//Because the block is free put a Node structure
+		block = (Node<char*>*)(memblock + sizeof(size_t*));
+		block->data = memblock + sizeof(size_t*);
 
 		std::cout << "header of first free block: " <<
-			*(size_t*)(firstBlock->data - sizeof(header)) << "\n";
+			*(size_t*)(block->data - sizeof(header)) << "\n";
+
+		//Put footer
+		size_t *footer = (size_t*)(block->data +(blockSize - sizeof(size_t*)));
+		*footer = blockSize;
 
 		std::cout << "footer of first free block: " <<
-			*(size_t*)(firstBlock->data  + (size - sizeof(footer))) << "\n";
+			*(size_t*)(block->data + (blockSize - sizeof(footer))) << "\n";
 		
 		
-		freeBlocks.insertAtBeginning(firstBlock);
+		freeBlocks.insertAtBeginning(block);
 
-
+		freeBlocks.printWithIterator();
 	}
 	~MemoryManager()
 	{

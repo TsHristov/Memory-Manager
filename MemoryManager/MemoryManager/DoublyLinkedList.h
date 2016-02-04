@@ -1,6 +1,5 @@
 #pragma once
 #include "Iterator.h"
-#include "Node.h"
 
 template<class T>
 class DoublyLinkedList
@@ -39,12 +38,12 @@ public:
 	Iterator<T> getReverseIterator();
 
 	void printWithIterator();
-	void printWithReverseIterator();
+	//void printWithReverseIterator();
 };
 
 
 template<class T>
-void insertAfter(Node<T> *node, Node<T> *newNode)
+void DoublyLinkedList<T>::insertAfter(Node<T> *node, Node<T> *newNode)
 {
 	newNode->previous = node;
 	newNode->next = node->next;
@@ -61,7 +60,7 @@ void insertAfter(Node<T> *node, Node<T> *newNode)
 
 
 template<class T>
-void insertBefore(Node<T> *node, Node<T> *newNode)
+void DoublyLinkedList<T>::insertBefore(Node<T> *node, Node<T> *newNode)
 {
 	newNode->previous = node->previous;
 	newNode->next = node;
@@ -78,7 +77,7 @@ void insertBefore(Node<T> *node, Node<T> *newNode)
 
 
 template<class T>
-void insertAtBeginning(Node<T> *newNode)
+void DoublyLinkedList<T>::insertAtBeginning(Node<T> *newNode)
 {
 	if (!firstNode)
 	{
@@ -93,7 +92,7 @@ void insertAtBeginning(Node<T> *newNode)
 
 
 template<class T>
-void insertAtEnd(Node<T> *newNode)
+void DoublyLinkedList<T>::insertAtEnd(Node<T> *newNode)
 {
 	if (!lastNode)
 		insertAtBeginning(newNode);
@@ -103,7 +102,7 @@ void insertAtEnd(Node<T> *newNode)
 
 
 template<class T>
-void remove(Node<T> *node)
+void DoublyLinkedList<T>::remove(Node<T> *node)
 {
 	if (!node->previous)
 		firstNode = node->next;
@@ -116,39 +115,39 @@ void remove(Node<T> *node)
 }
 
 template<class T>
-void print()
+void DoublyLinkedList<T>::print()
 {
 	Node<T>* temp = firstNode;
 	std::cout << "Forward: ";
 	while (temp)
 	{
-		std::cout << temp->data;
+		std::cout << "Header data of free block: " << *(size_t*)(temp->data - sizeof(size_t*)) << "\n" << "\n";
 		temp = temp->next;
 	}
 	std::cout << "\n";
 }
 
 template<class T>
-Iterator<T> getIterator()
+Iterator<T> DoublyLinkedList<T>::getIterator()
 {
 	return Iterator<T>(this->firstNode);
 }
 
 
 template<class T>
-Iterator<T> getReverseIterator()
+Iterator<T> DoublyLinkedList<T>::getReverseIterator()
 {
 	return Iterator<T>(this->lastNode);
 }
 
-/*template<class T>
-void printWithIterator()
+template<class T>
+void DoublyLinkedList<T>::printWithIterator()
 {
-for (Iterator<T> it = this->getIterator(); it.next(); it.end())
-{
-std::cout << it.getCurrent() << '\n';
+	for (Iterator<T> it = this->getIterator(); it.end(); it.next())
+	{
+		std::cout << "iterator: " << *(size_t*)(it.getCurrent() - sizeof(size_t*)) << '\n';
+	}
 }
-}*/
 
 
 /*template<class T>

@@ -5,8 +5,8 @@ struct Node
 
 	// we may not need the data ,as a free block doesn`t need one
 	T data;
-	Node *previous;
-	Node *next;
+	Node<T> *previous;
+	Node<T> *next;
 
 public:
 	Node() :previous(NULL), next(NULL){}
