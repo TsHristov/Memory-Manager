@@ -12,19 +12,27 @@ int main()
 	{
 		MemoryManager mngr(1024);
 
-		size_t blockSize = 10 * sizeof(int);
+		size_t firstBlockSize = 10 * sizeof(int);
 
-		int *p = (int*)mngr.Malloc(blockSize);
-		*p = 3;
+		int *pArr1 = (int*)mngr.Malloc(firstBlockSize);
 
-		std::cout << "Value of header: " <<
-			*(size_t*)((char*)p - sizeof(size_t*)) << "\n";
+		size_t secondBlockSize = 8 * sizeof(int);
 
-		size_t valueOfFooter = *(size_t*)((char*)p + blockSize - sizeof(size_t*));
-		//std::cout << "valueOfFooter: " << valueOfFooter << "\n";
+		int *pArr2 = (int*)mngr.Malloc(secondBlockSize);
 
-		std::cout << "valueOfFooter: " << 
-			(*(size_t*)((char*)p + blockSize - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+		std::cout << "Value of header of Block No1: " <<
+			(*(size_t*)((char*)pArr1 - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+
+		std::cout << "Value of footer of Block No1: " <<
+			(*(size_t*)((char*)pArr1 - sizeof(size_t*) + ( firstBlockSize - sizeof(size_t*))) & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+
+		std::cout << "Value of header of Block No2: " <<
+			(*(size_t*)((char*)pArr2 - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+
+		std::cout << "Value of footer of Block No2: " <<
+			(*(size_t*)((char*)pArr2 - sizeof(size_t*) + (secondBlockSize - sizeof(size_t*))) & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+
+		//mngr.Free((char*)p);
 
 	}_CrtDumpMemoryLeaks();
 

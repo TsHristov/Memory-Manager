@@ -3,7 +3,6 @@
 
 char* MemoryManager::Malloc(size_t size)
 {
-	blockSize -= size;
 	/***
 	* pointerToBlock - the block that is going to be returned to the user.
 	*/
@@ -11,18 +10,7 @@ char* MemoryManager::Malloc(size_t size)
 
 	for (Iterator<char*> it = freeBlocks.getIterator(); !it.end(); it.next())
 	{
-		size_t header = *(size_t*)(it.getCurrent() - sizeof(size_t*));
-
-		if (header == (header & (~(1 << 31))))
-		{
-			std::cout << "The block is not allocated so we can allocate it now . . ." << "\n";
-			
-			// The address that is going to be returned to the user:
-			pointerToBlock = it.getCurrent();
-
-			// Now pointerToBlock points to the memory right after the header
-		}
-		std::cout << "iterator header: " << header << '\n';
+		pointerToBlock = it.getCurrent();
 	}
 
 	// If no free block was found.
@@ -31,28 +19,29 @@ char* MemoryManager::Malloc(size_t size)
 		return NULL;
 	}
 
-	std::cout << "ptrToBlock  header: " << *(size_t*)(pointerToBlock - sizeof(size_t*)) << "\n";
+	size_t HEADER = *(size_t*)(pointerToBlock - sizeof(size_t*));
+	size_t FOOTER = *(size_t*)(pointerToBlock - sizeof(size_t*) + (HEADER - sizeof(size_t*)));
 
-	//Reverse the pointer to where the header lays
-	pointerToBlock = pointerToBlock - sizeof(size_t*);
+	std::cout << "pointerToBlock header: " <<
+		HEADER  << "\n";
+	
+	std::cout << "pointerToBlock footer : " <<
+		FOOTER << "\n";
 
 	// Header of the block
-	size_t *header = (size_t*)pointerToBlock;
+	size_t *header = (size_t*)(pointerToBlock - sizeof(size_t*));
 	*header = size;
+
+	std::cout << "pointerToBlock header after: " << *(size_t*)(pointerToBlock - sizeof(size_t*)) << "\n";
 
 	// Mark block as allocated
 	*header = (((*header ^ (1 << (4 * sizeof(size_t)-1)))));
 
-	std::cout << "MMMMM : " << *(size_t*)memblock << "\n";
-
-	
-	
 	// Real size of header
-	std::cout << "header: |" << (*(size_t*)memblock & (~(1 << (4 * sizeof(size_t)-1)))) << "|" << "\n";
+	std::cout << "header: |" << (*(size_t*)(pointerToBlock - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))) << "|" << "\n";
 
-	
 	// Footer of the block
-	size_t *footer = (size_t*)(pointerToBlock + sizeof(size_t*) + (size - sizeof(size_t*)) * sizeof(char));
+	size_t *footer = (size_t*)(pointerToBlock - sizeof(size_t*) + (size - sizeof(size_t*)));
 	*footer = size;
 
 	//Mark block as allocated
@@ -60,11 +49,19 @@ char* MemoryManager::Malloc(size_t size)
 
 	// Real size of footer
 	std::cout << "footer: |" <<
-		(*(size_t*)(pointerToBlock + sizeof(size_t*)+(size - sizeof(size_t*)) * sizeof(char)) & (~(1 << (4 * sizeof(size_t)-1))))
+		(*(size_t*)(pointerToBlock - sizeof(size_t*)+(size - sizeof(size_t*))) & (~(1 << (4 * sizeof(size_t)-1))))
 		<< "|" << "\n";
 
-	// Remove tis block from freeBlocks
+	// Remove this block from freeBlocks
+	std::cout << "Block data header: " <<
+		(*(size_t*)(block->data - sizeof(size_t*))  & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
+
 	freeBlocks.remove(block);
+
+	blockSize -= size;
+
+	std::cout << "what do we have here : " <<
+		*(size_t*)(pointerToBlock - sizeof(size_t*)+(size - sizeof(size_t*))) << "\n";
 
 	//Put new free block at the remaining unused space:
 	size_t *hdr = (size_t*)(pointerToBlock + size - sizeof(size_t*));
@@ -76,11 +73,15 @@ char* MemoryManager::Malloc(size_t size)
 	std::cout << "header of first free block: " <<
 		*(size_t*)(block->data - sizeof(hdr)) << "\n";
 
-	size_t *ftr = (size_t*)(block->data + (blockSize - sizeof(size_t*)));
+	std::cout << "footer of previous: |" <<
+		(*(size_t*)(block->data - sizeof(size_t*) - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1))))
+		<< "|" << "\n";
+
+	size_t *ftr = (size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(size_t*)));
 	*ftr = blockSize;
 
 	std::cout << "footer of first free block: " <<
-		*(size_t*)(memblock +1024 - sizeof(size_t*)) << "\n";
+		*(size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(size_t*))) << "\n";
 	
 	freeBlocks.insertAtBeginning(block);
 
@@ -90,5 +91,21 @@ char* MemoryManager::Malloc(size_t size)
 
 void MemoryManager::Free(char *ptr)
 {
-	*ptr = *ptr & -2;
+	std::cout << "Value of header in free: " <<
+		(*(size_t*)(ptr - sizeof(size_t*))) << "\n";
+
+	// Mark block as free
+	//	1.mark the header
+
+	//	1.mark the header
+	(*(size_t*)(ptr - sizeof(size_t*)) = (*(size_t*)(ptr - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))));
+	
+	Node<char*> *freeBlock = (Node<char*>*)(ptr + sizeof(size_t*));
+	freeBlocks.insertAtBeginning(freeBlock);
+	// 2.mark the footer
+
+	//Coalesce it with neighbours
+	
+	// Put it into the freeBlocks list
+
 }

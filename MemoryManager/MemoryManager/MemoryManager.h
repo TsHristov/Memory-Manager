@@ -36,11 +36,11 @@ public:
 			*(size_t*)(block->data - sizeof(header)) << "\n";
 
 		//Put footer
-		size_t *footer = (size_t*)(block->data +(blockSize - sizeof(size_t*)));
+		size_t *footer = (size_t*)(block->data - sizeof(size_t*) +(blockSize - sizeof(size_t*)));
 		*footer = blockSize;
 
 		std::cout << "footer of first free block: " <<
-			*(size_t*)(block->data + (blockSize - sizeof(footer))) << "\n";
+			*(size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(footer))) << "\n";
 		
 		
 		freeBlocks.insertAtBeginning(block);
