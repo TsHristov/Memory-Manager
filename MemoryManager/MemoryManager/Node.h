@@ -2,8 +2,6 @@
 template<class T>
 struct Node
 {
-
-	// we may not need the data ,as a free block doesn`t need one
 	T data;
 	Node<T> *previous;
 	Node<T> *next;
@@ -21,11 +19,5 @@ public:
 		this->data = data;
 		this->previous = previous;
 		this->next = next;
-	}
-	~Node(){
-		if (this->next)
-		{
-			delete next;
-		}
 	}
 };

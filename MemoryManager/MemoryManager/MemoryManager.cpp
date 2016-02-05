@@ -8,9 +8,18 @@ char* MemoryManager::Malloc(size_t size)
 	*/
 	char *pointerToBlock = NULL;
 
+	ForwardIteratationOverFreeBlocks();
+
 	for (Iterator<char*> it = freeBlocks.getIterator(); !it.end(); it.next())
 	{
-		pointerToBlock = it.getCurrent();
+		
+		size_t sizeOfFreeBlock = GetHeader(it.getCurrent());
+		//If the block is large enough
+		if (sizeOfFreeBlock >= size)
+		{
+			pointerToBlock = it.getCurrent();
+			break;
+		}
 	}
 
 	// If no free block was found.
@@ -19,26 +28,13 @@ char* MemoryManager::Malloc(size_t size)
 		return NULL;
 	}
 
-	size_t HEADER = *(size_t*)(pointerToBlock - sizeof(size_t*));
-	size_t FOOTER = *(size_t*)(pointerToBlock - sizeof(size_t*) + (HEADER - sizeof(size_t*)));
-
-	std::cout << "pointerToBlock header: " <<
-		HEADER  << "\n";
-	
-	std::cout << "pointerToBlock footer : " <<
-		FOOTER << "\n";
-
 	// Header of the block
 	size_t *header = (size_t*)(pointerToBlock - sizeof(size_t*));
 	*header = size;
 
-	std::cout << "pointerToBlock header after: " << *(size_t*)(pointerToBlock - sizeof(size_t*)) << "\n";
-
 	// Mark block as allocated
 	*header = (((*header ^ (1 << (4 * sizeof(size_t)-1)))));
 
-	// Real size of header
-	std::cout << "header: |" << (*(size_t*)(pointerToBlock - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))) << "|" << "\n";
 
 	// Footer of the block
 	size_t *footer = (size_t*)(pointerToBlock - sizeof(size_t*) + (size - sizeof(size_t*)));
@@ -47,41 +43,22 @@ char* MemoryManager::Malloc(size_t size)
 	//Mark block as allocated
 	*footer = (((*footer ^ (1 << (4 * sizeof(size_t)-1)))));
 
-	// Real size of footer
-	std::cout << "footer: |" <<
-		(*(size_t*)(pointerToBlock - sizeof(size_t*)+(size - sizeof(size_t*))) & (~(1 << (4 * sizeof(size_t)-1))))
-		<< "|" << "\n";
 
 	// Remove this block from freeBlocks
-	std::cout << "Block data header: " <<
-		(*(size_t*)(block->data - sizeof(size_t*))  & (~(1 << (4 * sizeof(size_t)-1)))) << "\n";
-
-	freeBlocks.remove(block);
+	freeBlocks.remove((Node<char*>*) pointerToBlock);
 
 	blockSize -= size;
-
-	std::cout << "what do we have here : " <<
-		*(size_t*)(pointerToBlock - sizeof(size_t*)+(size - sizeof(size_t*))) << "\n";
 
 	//Put new free block at the remaining unused space:
 	size_t *hdr = (size_t*)(pointerToBlock + size - sizeof(size_t*));
 	*hdr = blockSize;
 
-	block = (Node<char*>*)(pointerToBlock + size);
+	Node<char*> * block = (Node<char*>*)(pointerToBlock + size);
 	block->data = pointerToBlock + size;
 	
-	std::cout << "header of first free block: " <<
-		*(size_t*)(block->data - sizeof(hdr)) << "\n";
-
-	std::cout << "footer of previous: |" <<
-		(*(size_t*)(block->data - sizeof(size_t*) - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1))))
-		<< "|" << "\n";
 
 	size_t *ftr = (size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(size_t*)));
 	*ftr = blockSize;
-
-	std::cout << "footer of first free block: " <<
-		*(size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(size_t*))) << "\n";
 	
 	freeBlocks.insertAtBeginning(block);
 
@@ -91,21 +68,73 @@ char* MemoryManager::Malloc(size_t size)
 
 void MemoryManager::Free(char *ptr)
 {
-	std::cout << "Value of header in free: " <<
-		(*(size_t*)(ptr - sizeof(size_t*))) << "\n";
-
-	// Mark block as free
-	//	1.mark the header
-
-	//	1.mark the header
-	(*(size_t*)(ptr - sizeof(size_t*)) = (*(size_t*)(ptr - sizeof(size_t*)) & (~(1 << (4 * sizeof(size_t)-1)))));
+	MarkAsFree(ptr);
 	
-	Node<char*> *freeBlock = (Node<char*>*)(ptr + sizeof(size_t*));
+	Node<char*> *freeBlock = (Node<char*>*)ptr;
+	freeBlock->data = ptr;
+
+	/***
+	*	Insert the freed block into the freeBlocks list:s
+	*		- LIFO policy:
+	*			- insert at the beggining of the list of free blocks
+	*/
+
 	freeBlocks.insertAtBeginning(freeBlock);
-	// 2.mark the footer
 
-	//Coalesce it with neighbours
-	
-	// Put it into the freeBlocks list
+}
 
+
+size_t MemoryManager::GetHeader(char *ptr) const
+{
+	return *(size_t*)(ptr - sizeof(size_t*));
+}
+
+
+size_t MemoryManager::GetHeaderRealSize(char *ptr) const
+{
+	return (GetHeader(ptr) & (~(1 << (4 * sizeof(size_t)-1))));
+}
+
+
+size_t MemoryManager::GetFooter(char *ptr) const
+{
+	size_t blockSize = GetHeaderRealSize(ptr);
+	return *(size_t*)(ptr - sizeof(size_t*)+(blockSize - sizeof(size_t*)));
+}
+
+
+size_t MemoryManager::GetFooterRealSize(char *ptr) const
+{
+	return (GetHeader(ptr) & (~(1 << (4 * sizeof(size_t)-1))));
+}
+
+
+void MemoryManager::SetHeaderAsFree(char *ptr)
+{
+	(*(size_t*)(ptr - sizeof(size_t*)) = (*(size_t*)(ptr - sizeof(size_t*))) & (~(1 << (4 * sizeof(size_t)-1))));
+}
+
+
+void MemoryManager::SetFooterAsFree(char* ptr)
+{
+	(*(size_t*)(ptr - sizeof(size_t*)+(blockSize - sizeof(size_t*)))) = 
+		(*(size_t*)(ptr - sizeof(size_t*)+(blockSize - sizeof(size_t*)))) & (~(1 << (4 * sizeof(size_t)-1)));
+}
+
+
+void MemoryManager::MarkAsFree(char *ptr)
+{
+	SetHeaderAsFree(ptr);
+	SetFooterAsFree(ptr);
+}
+
+
+void MemoryManager::ForwardIteratationOverFreeBlocks()
+{
+	int counter = 0;
+	for (Iterator<char*> it = freeBlocks.getIterator(); !it.end(); it.next())
+	{
+		counter += 1;
+		std::cout << "Free block No " << counter << " : " << GetHeader(it.getCurrent()) << "\n";
+	}
 }

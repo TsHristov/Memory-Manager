@@ -38,7 +38,6 @@ public:
 	}
 	bool end() const
 	{
-		//return this->pCurrent == NULL || this->pCurrent->next == NULL || this->pCurrent->previous == NULL;
 		return this->pCurrent == NULL;
 	}
 };

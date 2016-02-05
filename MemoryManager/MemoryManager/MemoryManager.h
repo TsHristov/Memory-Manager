@@ -6,8 +6,8 @@ class MemoryManager
 {
 private:
 	char *memblock;
+	//Doubly Linked list to store the pointers to the free blocks
 	DoublyLinkedList<char*> freeBlocks;
-	Node<char*> *block;
 	size_t blockSize;
 
 public:
@@ -29,23 +29,17 @@ public:
 		*header = blockSize;
 
 		//Because the block is free put a Node structure
-		block = (Node<char*>*)(memblock + sizeof(size_t*));
+		Node<char*> *block = (Node<char*>*)(memblock + sizeof(size_t*));
 		block->data = memblock + sizeof(size_t*);
 
-		std::cout << "header of first free block: " <<
-			*(size_t*)(block->data - sizeof(header)) << "\n";
 
 		//Put footer
 		size_t *footer = (size_t*)(block->data - sizeof(size_t*) +(blockSize - sizeof(size_t*)));
 		*footer = blockSize;
-
-		std::cout << "footer of first free block: " <<
-			*(size_t*)(block->data - sizeof(size_t*) + (blockSize - sizeof(footer))) << "\n";
-		
 		
 		freeBlocks.insertAtBeginning(block);
 
-		freeBlocks.printWithIterator();
+		//freeBlocks.printWithIterator();
 	}
 	~MemoryManager()
 	{
@@ -56,4 +50,25 @@ public:
 public:
 	char *Malloc(size_t);
 	void Free(char*);
+
+public:
+	size_t GetHeader(char*) const;
+	size_t GetFooter(char*) const;
+
+	size_t GetHeaderRealSize(char*) const;
+	size_t GetFooterRealSize(char*) const;
+
+	void SetHeaderAsFree(char*);
+	void SetFooterAsFree(char*);
+
+	void MarkAsFree(char*);
+
+	void ForwardIteratationOverFreeBlocks();
+	//bool IsAllocated(char*) const;
+
+	//void MarkAsAllocated(char*);
+	//
+	
+	//void SetHeader();
+	//void SetFooter();
 };

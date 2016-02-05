@@ -8,15 +8,19 @@ class DoublyLinkedList
 private:
 	Node<T> *firstNode;
 	Node<T> *lastNode;
+
+public:
 	size_t size;
 
 public:
 	DoublyLinkedList() :firstNode(NULL), lastNode(NULL), size(0){}
 	~DoublyLinkedList()
 	{
-		if (this->firstNode)
+		while (firstNode)
 		{
+			Node<T>* next = firstNode->next;
 			delete firstNode;
+			firstNode = next;
 		}
 	}
 
@@ -56,6 +60,7 @@ void DoublyLinkedList<T>::insertAfter(Node<T> *node, Node<T> *newNode)
 		node->next->previous = newNode;
 	}
 	node->next = newNode;
+	++size;
 }
 
 
@@ -73,6 +78,7 @@ void DoublyLinkedList<T>::insertBefore(Node<T> *node, Node<T> *newNode)
 		node->previous->next = newNode;
 	}
 	node->previous = newNode;
+	++size;
 }
 
 
@@ -85,6 +91,7 @@ void DoublyLinkedList<T>::insertAtBeginning(Node<T> *newNode)
 		lastNode = newNode;
 		newNode->previous = NULL;
 		newNode->next = NULL;
+		++size;
 	}
 	else
 		insertBefore(firstNode, newNode);
@@ -112,6 +119,7 @@ void DoublyLinkedList<T>::remove(Node<T> *node)
 		lastNode = node->previous;
 	else
 		node->next->previous = node->previous;
+	--size;
 }
 
 template<class T>
