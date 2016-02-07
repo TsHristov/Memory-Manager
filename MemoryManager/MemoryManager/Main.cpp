@@ -1,8 +1,5 @@
 #include <iostream>
 #include "MemoryManager.h"
-#define CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
 
 int main()
 {
@@ -36,6 +33,8 @@ int main()
 	int *pArr3 = (int*)mngr.Malloc(thirdBlockSize);
 
 	mngr.Free((char*)pArr1);
+	mngr.Free((char*)pArr2);
+	mngr.Free((char*)pArr3);
 
 	mngr.ForwardIteratationOverFreeBlocks();
 
