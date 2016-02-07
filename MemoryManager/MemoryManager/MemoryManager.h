@@ -5,70 +5,59 @@
 class MemoryManager
 {
 private:
-	char *memblock;
+	//The starting big block of memory
+	char memblock[1024];
+
 	//Doubly Linked list to store the pointers to the free blocks
 	DoublyLinkedList<char*> freeBlocks;
-	size_t blockSize;
 
 public:
-	/***
-	*	Start with one big free block:
-	*		1.Put header information
-	*		2.Put footer information
-	*		3.Put its address in the freeBlocks list,so we will allocate from there.
-	*/
-	MemoryManager(size_t size)
-	{
-		blockSize = size;
-		
-		//Allocate big chunk of memory
-		memblock = new char[blockSize];
-
-		//Put header
-		size_t *header = (size_t*)memblock;
-		*header = blockSize;
-
-		//Because the block is free put a Node structure
-		Node<char*> *block = (Node<char*>*)(memblock + sizeof(size_t*));
-		block->data = memblock + sizeof(size_t*);
-
-
-		//Put footer
-		size_t *footer = (size_t*)(block->data - sizeof(size_t*) +(blockSize - sizeof(size_t*)));
-		*footer = blockSize;
-		
-		freeBlocks.insertAtBeginning(block);
-
-		//freeBlocks.printWithIterator();
-	}
+	MemoryManager(size_t&);
 	~MemoryManager()
 	{
-		if (memblock)
-		delete[] memblock;
+		/*if (memblock)
+		{
+			delete[] memblock;
+		}*/
 	}
 
 public:
-	char *Malloc(size_t);
+	char *Malloc(size_t&);
 	void Free(char*);
 
 public:
-	size_t GetHeader(char*) const;
-	size_t GetFooter(char*) const;
+	//Get value of header
+	size_t GetHeader(char * const) const;
+	void SetHeader(char * const, size_t&);
+	//Get address of header
+	char * const GetAddressOfHeader(char * const) const;
 
-	size_t GetHeaderRealSize(char*) const;
-	size_t GetFooterRealSize(char*) const;
+	//Get value of footer
+	size_t GetFooter(char * const) const;
+	void SetFooter(char * const, size_t&);
+	//Get address of footer
+	char * const GetAddressOfFooter(char * const) const;
 
-	void SetHeaderAsFree(char*);
-	void SetFooterAsFree(char*);
+	size_t GetHeaderRealSize(char * const) const;
+	size_t GetFooterRealSize(char * const) const;
 
-	void MarkAsFree(char*);
+	void SetHeaderAsFree(char * const);
+	void SetFooterAsFree(char * const);
+
+	void MarkAsFree(char * const);
+	void MarkAsAllocated(char * const);
 
 	void ForwardIteratationOverFreeBlocks();
-	//bool IsAllocated(char*) const;
 
-	//void MarkAsAllocated(char*);
-	//
-	
-	//void SetHeader();
-	//void SetFooter();
+	bool IsBlockFree(char * const) const;
+	bool IsNextBlockFree(char * const) const;
+	bool IsPreviousBlockFree(char * const) const;
+	bool IsValidAddress(char * const) const;
+
+	char * const GetNextBlock(char * const) const;
+	char * const GetPreviousBlock(char * const) const;
+
+	char * const CoalesceWithNeighbours(char * const);
+	char * const CoalesceWithNextBlock(char * const);
+	char * const CoalesceWithPreviousBlock(char * const);
 };

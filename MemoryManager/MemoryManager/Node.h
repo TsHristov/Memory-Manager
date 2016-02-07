@@ -2,12 +2,16 @@
 template<class T>
 struct Node
 {
-	T data;
+	T const data;
 	Node<T> *previous;
 	Node<T> *next;
 
 public:
 	Node() :previous(NULL), next(NULL){}
+	~Node()
+	{
+		delete next;
+	}
 	Node(const T& data)
 	{
 		this->data = data;

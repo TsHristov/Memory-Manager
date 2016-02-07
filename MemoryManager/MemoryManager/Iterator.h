@@ -14,7 +14,7 @@ public:
 	}
 
 public:
-	T& getCurrent()
+	const T  getCurrent() const
 	{
 		return this->pCurrent->data;
 	}

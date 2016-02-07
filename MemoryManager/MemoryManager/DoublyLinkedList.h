@@ -35,14 +35,9 @@ public:
 
 	void remove(Node<T>*);
 
-	void print();
-
 public:
 	Iterator<T> getIterator();
 	Iterator<T> getReverseIterator();
-
-	void printWithIterator();
-	//void printWithReverseIterator();
 };
 
 
@@ -122,18 +117,6 @@ void DoublyLinkedList<T>::remove(Node<T> *node)
 	--size;
 }
 
-template<class T>
-void DoublyLinkedList<T>::print()
-{
-	Node<T>* temp = firstNode;
-	std::cout << "Forward: ";
-	while (temp)
-	{
-		std::cout << "Header data of free block: " << *(size_t*)(temp->data - sizeof(size_t*)) << "\n" << "\n";
-		temp = temp->next;
-	}
-	std::cout << "\n";
-}
 
 template<class T>
 Iterator<T> DoublyLinkedList<T>::getIterator()
@@ -147,22 +130,3 @@ Iterator<T> DoublyLinkedList<T>::getReverseIterator()
 {
 	return Iterator<T>(this->lastNode);
 }
-
-template<class T>
-void DoublyLinkedList<T>::printWithIterator()
-{
-	for (Iterator<T> it = this->getIterator(); it.end(); it.next())
-	{
-		std::cout << "iterator: " << *(size_t*)(it.getCurrent() - sizeof(size_t*)) << '\n';
-	}
-}
-
-
-/*template<class T>
-void printWithReverseIterator()
-{
-for (Iterator<T> it = this->getReverseIterator(); it.previous(); it.end())
-{
-std::cout << it.getCurrent() << '\n';
-}
-}*/
