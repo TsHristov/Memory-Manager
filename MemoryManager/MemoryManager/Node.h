@@ -7,7 +7,7 @@
 */
 struct Node
 {
-	char* const data;
+	char* const addressOfFreeBlock;
 	Node *previous;
 	Node *next;
 };

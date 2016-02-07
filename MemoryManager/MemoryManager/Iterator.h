@@ -4,40 +4,36 @@
 class Iterator
 {
 private:
-	Node *pStart;
-	Node *pCurrent;
+	Node *start;
+	Node *current;
 
 public:
-	Iterator(Node *pStart)
+	Iterator(Node *start)
 	{
-		this->pStart = this->pCurrent = pStart;
+		this->start = this->current = start;
 	}
 
 public:
-	char*  getCurrent() const
+	char*  getAddressOfFreeBlock() const
 	{
-		return this->pCurrent->data;
+		return this->current->addressOfFreeBlock;
 	}
-	/*void setCurrent(char* const & Value)
+	void moveToNext()
 	{
-		this->pCurrent->data = Value;
-	}*/
-	void next()
-	{
-		if (this->pCurrent)
+		if (this->current)
 		{
-			this->pCurrent = this->pCurrent->next;
+			this->current = this->current->next;
 		}
 	}
-	void previous()
+	void moveToPrevious()
 	{
-		if (this->pCurrent)
+		if (this->current)
 		{
-			this->pCurrent = this->pCurrent->previous;
+			this->current = this->current->previous;
 		}
 	}
 	bool end() const
 	{
-		return this->pCurrent == NULL;
+		return this->current == NULL;
 	}
 };

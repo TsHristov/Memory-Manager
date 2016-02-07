@@ -1,131 +1,125 @@
 #include "MemoryManager.h"
 #include <iostream>
 
-/***
-*	Start with one big free block:
-*		1.Put header information
-*		2.Put footer information
-*		3.Put its address in the freeBlocks list,so we will allocate from there.
-*/
-MemoryManager::MemoryManager(size_t& size)
+///	Start with one big free block:
+///		1.Put header
+///		2.Put its address in the freeBlocks list
+///		3.Put footer
+MemoryManager::MemoryManager(size_t size)
 {
-	//Allocate big chunk of memory
+	//	Allocate big block of memory
 	memblock = new char[size];
 
-	//Put header
+	//	Put header
 	size_t *header = (size_t*)memblock;
 	*header = size;
 
-	//Because the block is free put a Node structure
+	//	Because the block is free put
+	//	Node structure right after the header
 	Node *block = (Node*)(memblock + sizeof(size_t*));
-	(char*)block->data = memblock + sizeof(size_t*);
+	(char*)block->addressOfFreeBlock = memblock + sizeof(size_t*);
 	block->next = NULL;
 	block->previous = NULL;
 	
 
-	//Put footer
-	size_t *footer = (size_t*)(block->data - sizeof(size_t*)+(size - sizeof(size_t*)));
+	//	Put footer
+	size_t *footer = (size_t*)(block->addressOfFreeBlock - sizeof(size_t*)+(size - sizeof(size_t*)));
 	*footer = size;
 
+	//	Insert the inital first big free block into the list of free blocks
 	freeBlocks.insertAtBeginning(block);
 }
 
 
-/***
-*	Main function to allocate memory:
-*		- start with big chunk of memory allocated on the heap and give it to the user
-*		- on each allocation size bytes are given to the user and the others are free for future allocations
-*/
-char* MemoryManager::Malloc(size_t &size)
+///	Main function to allocate memory:
+///
+char* MemoryManager::Malloc(size_t size)
 {
 	char * pointerToBlock = NULL;
 	size_t sizeOfFreeBlock;
 	ForwardIteratationOverFreeBlocks();
 
-	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.next())
+	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.moveToNext())
 	{
 		
-		sizeOfFreeBlock = GetHeader(it.getCurrent());
-		//If the block is large enough
+		sizeOfFreeBlock = GetHeader(it.getAddressOfFreeBlock());
+		//	If the block is large enough
 		if (sizeOfFreeBlock >= size)
 		{
-			pointerToBlock = it.getCurrent();
-			//Remove the node structure from the block so it`s payload can be used.
+			pointerToBlock = it.getAddressOfFreeBlock();
+			//	Remove the Node  from the block`s payload area so it can be used
 			freeBlocks.remove((Node*) pointerToBlock);
 			break;
 		}
 	}
-	
-	
 
-	// If no free block was found.
+	//	If no free block was found
 	if (!pointerToBlock)
 	{
 		return NULL;
 	}
 
-	// Set header of the block
+	//	Set header of the block
 	SetHeader(pointerToBlock, size);
 	
-	// Set footer of the block
+	//	Set footer of the block
 	SetFooter(pointerToBlock, size);
 
-	//Mark the block as allocated
-	MarkAsAllocated(pointerToBlock);
+	//	Mark the block as allocated (set it`s highest bit)
+	MarkBlockAsAllocated(pointerToBlock);
 
-	//The remaining bytes of the memblock
-	//blockSize -= size;
+	//	The remaining size of the returned free block
 	size_t freeBlockSize = sizeOfFreeBlock - size;
 
-	//Put new free block at the remaining unused space:
-	size_t *hdr = (size_t*)(pointerToBlock + size - sizeof(size_t*));
-	*hdr = freeBlockSize;
+	//	Put new free block at the remaining unused payload area
+	//		1.Put header
+	//		2.Put its address after the header
+	//		3.Put footer
+	//		4.Insert free block into free blocks list
 
-	Node *block = (Node*)(pointerToBlock + size);
-	(char*)block->data = pointerToBlock + size;
-	block->next = NULL;
-	block->previous = NULL;
+	//	1.Put header
+	size_t *header = (size_t*)(pointerToBlock + size - sizeof(size_t*));
+	*header = freeBlockSize;
+
+	//	2.Put its address after the header
+	Node *freeBlock = (Node*)(pointerToBlock + size);
+	(char*)freeBlock->addressOfFreeBlock = pointerToBlock + size;
+	freeBlock->next = NULL;
+	freeBlock->previous = NULL;
 	
+	//	3.Put footer
+	size_t *footer = (size_t*)(freeBlock->addressOfFreeBlock - sizeof(size_t*) + (freeBlockSize - sizeof(size_t*)));
+	*footer = freeBlockSize;
 
-	size_t *ftr = (size_t*)(block->data - sizeof(size_t*) + (freeBlockSize - sizeof(size_t*)));
-	*ftr = freeBlockSize;
-	
-	freeBlocks.insertAtBeginning(block);
+	//	4.Insert free block into free blocks list
+	freeBlocks.insertAtBeginning(freeBlock);
 
-	// Now should mark the next block as free so next time we allocate from there
 	return pointerToBlock;
 }
 
+
 void MemoryManager::Free(char *ptr)
 {
-	if (IsValidAddress(ptr))
-	{
-		std::cout << "yes" << "\n";
-	}
-	// Mark the block as free
-	MarkAsFree(ptr);
 
-	ForwardIteratationOverFreeBlocks();
-	//Coalesce with neighbours
+	//	Mark the block as free
+	MarkBlockAsFree(ptr);
+
+	//	Coalesce with neighbours
 	ptr = CoalesceWithNextBlock(ptr);
-	ForwardIteratationOverFreeBlocks();
 	
 	// Put free block structure into the unused payload space
 	Node *freeBlock = (Node*)ptr;
-	(char*)freeBlock->data = ptr;
+	(char*)freeBlock->addressOfFreeBlock = ptr;
 	freeBlock->next = NULL;
 	freeBlock->previous = NULL;
 
-	//	Insert the freed block into the freeBlocks list:
-	//			- insert at the beggining of the list of free blocks
-	
+	//	LIFO policy:
+	//		- always insert most recently freed block at the beggining of the list
 	freeBlocks.insertAtBeginning(freeBlock);
-	ForwardIteratationOverFreeBlocks();
-
 }
 
 
-void MemoryManager::MarkAsAllocated(char * const ptr)
+void MemoryManager::MarkBlockAsAllocated(char * const ptr)
 {
 	size_t header = (((GetHeader(ptr) ^ (1 << (4 * sizeof(size_t)-1)))));
 	SetHeader(ptr, header);
@@ -134,16 +128,16 @@ void MemoryManager::MarkAsAllocated(char * const ptr)
 	SetFooter(ptr, footer);
 }
 
+
 size_t MemoryManager::GetHeader(char * const ptr) const
 {
-	size_t cpy = *(size_t*)(ptr - sizeof(size_t*));
-	return cpy;
+	return *(size_t*)(ptr - sizeof(size_t*));
 }
+
 
 char * const MemoryManager::GetAddressOfHeader(char * const ptr) const
 {
-	char * const addressOfHeader = ptr - sizeof(size_t*);
-	return addressOfHeader;
+	return ptr - sizeof(size_t*);
 }
 
 
@@ -163,8 +157,7 @@ size_t MemoryManager::GetFooter(char * const ptr) const
 char * const MemoryManager::GetAddressOfFooter(char * const ptr) const
 {
 	size_t blockSize = GetHeaderRealSize(ptr);
-	char * const p = ptr - sizeof(size_t*)+(blockSize - sizeof(size_t*));
-	return p;
+	return ptr - sizeof(size_t*)+(blockSize - sizeof(size_t*));
 }
 
 
@@ -187,7 +180,7 @@ void MemoryManager::SetFooterAsFree(char* const ptr)
 }
 
 
-void MemoryManager::MarkAsFree(char * const ptr)
+void MemoryManager::MarkBlockAsFree(char * const ptr)
 {
 	SetHeaderAsFree(ptr);
 	SetFooterAsFree(ptr);
@@ -197,10 +190,10 @@ void MemoryManager::MarkAsFree(char * const ptr)
 void MemoryManager::ForwardIteratationOverFreeBlocks()
 {
 	int counter = 0;
-	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.next())
+	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.moveToNext())
 	{
 		counter += 1;
-		std::cout << "Free block No " << counter << " : " << GetHeader(it.getCurrent()) << "\n";
+		std::cout << "Free block No " << counter << " : " << GetHeader(it.getAddressOfFreeBlock()) << "\n";
 	}
 }
 
@@ -225,9 +218,9 @@ bool MemoryManager::IsPreviousBlockFree(char * const ptr) const
 
 char * const MemoryManager::GetNextBlock(char * const ptr) const
 {
-	char * const nextBlock = ptr + GetHeaderRealSize(ptr);
-	return nextBlock;
+	return ptr + GetHeaderRealSize(ptr);
 }
+
 
 char * const MemoryManager::GetPreviousBlock(char * const ptr) const
 {
@@ -256,17 +249,17 @@ char * const MemoryManager::CoalesceWithNextBlock(char * const ptr)
 }
 
 
-void MemoryManager::SetHeader(char * const ptr, size_t &data)
+void MemoryManager::SetHeader(char * const ptr, size_t data)
 {
 	*(size_t*)(GetAddressOfHeader(ptr)) = data;
 }
 
 
-void MemoryManager::SetFooter(char * const ptr, size_t &data)
+void MemoryManager::SetFooter(char * const ptr, size_t data)
 {
-	char * const p = ptr;
-	*(size_t*)(GetAddressOfFooter(p)) = data;
+	*(size_t*)(GetAddressOfFooter(ptr)) = data;
 }
+
 
 bool MemoryManager::IsValidAddress(char * const ptr) const
 { 

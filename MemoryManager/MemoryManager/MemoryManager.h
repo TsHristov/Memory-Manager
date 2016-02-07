@@ -5,49 +5,47 @@
 class MemoryManager
 {
 private:
-	//The starting big block of memory
+	//	The starting big block of memory,from which the user will allocate memory
 	char *memblock;
 
-	//Doubly Linked list to store the pointers to the free blocks
+	//	Stores all free blocks available
 	DoublyLinkedList freeBlocks;
 
 public:
-	MemoryManager(size_t&);
+	MemoryManager(size_t);
 	~MemoryManager()
 	{
-		//The only allocated memory in the project.
-		if (memblock)
-		{
-			delete[] memblock;
-		}
+		delete[] memblock;
 	}
 
 public:
-	char *Malloc(size_t&);
+	char *Malloc(size_t);
 	void Free(char*);
 
 public:
-	//Get value of header
+	//	Functions to operate on the header of the blocks
 	size_t GetHeader(char * const) const;
-	void SetHeader(char * const, size_t&);
-	//Get address of header
+	void SetHeader(char * const, size_t);
 	char * const GetAddressOfHeader(char * const) const;
 
-	//Get value of footer
+	//	Methods to operate on the footer of the blocks
 	size_t GetFooter(char * const) const;
-	void SetFooter(char * const, size_t&);
-	//Get address of footer
+	void SetFooter(char * const, size_t);
 	char * const GetAddressOfFooter(char * const) const;
 
+	//	These return the real value of header and footer
+	//	(without set highest bit)
 	size_t GetHeaderRealSize(char * const) const;
 	size_t GetFooterRealSize(char * const) const;
 
+	//	These methods remove the set highest bit.
 	void SetHeaderAsFree(char * const);
 	void SetFooterAsFree(char * const);
 
-	void MarkAsFree(char * const);
-	void MarkAsAllocated(char * const);
+	void MarkBlockAsFree(char * const);
+	void MarkBlockAsAllocated(char * const);
 
+	//	Utility method to print the free blocks available
 	void ForwardIteratationOverFreeBlocks();
 
 	bool IsBlockFree(char * const) const;
