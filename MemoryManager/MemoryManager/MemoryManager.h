@@ -56,7 +56,6 @@ public:
 	char * const GetNextBlock(char * const) const;
 	char * const GetPreviousBlock(char * const) const;
 
-	char * const CoalesceWithNeighbours(char * const);
 	char * const CoalesceWithNextBlock(char * const);
 	char * const CoalesceWithPreviousBlock(char * const);
 };

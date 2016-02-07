@@ -105,7 +105,15 @@ void MemoryManager::Free(char *ptr)
 	MarkBlockAsFree(ptr);
 
 	//	Coalesce with neighbours
-	ptr = CoalesceWithNextBlock(ptr);
+	if (IsNextBlockFree(ptr) && IsPreviousBlockFree(ptr))
+	{
+		ptr = CoalesceWithNextBlock(ptr);
+		ptr = CoalesceWithPreviousBlock(ptr);
+	}
+	else if (IsNextBlockFree(ptr))
+		ptr = CoalesceWithNextBlock(ptr);
+	else if (IsPreviousBlockFree(ptr))
+		ptr = CoalesceWithPreviousBlock(ptr);
 	
 	// Put free block structure into the unused payload space
 	Node *freeBlock = (Node*)ptr;
@@ -131,7 +139,8 @@ void MemoryManager::MarkBlockAsAllocated(char * const ptr)
 
 size_t MemoryManager::GetHeader(char * const ptr) const
 {
-	return *(size_t*)(ptr - sizeof(size_t*));
+	if (IsValidAddress(ptr - sizeof(size_t*)))
+		return *(size_t*)(ptr - sizeof(size_t*));
 }
 
 
@@ -235,11 +244,41 @@ char * const MemoryManager::CoalesceWithNextBlock(char * const ptr)
 	{
 		//Remove next block from free blocks
 		freeBlocks.remove((Node*)GetNextBlock(ptr));
+		
+		ForwardIteratationOverFreeBlocks();
+
 		//Update header
 		size_t newHeaderData = GetHeader(ptr) + GetHeader(GetNextBlock(ptr));
 		SetHeader(ptr, newHeaderData);
 		//Update footer
 		SetFooter(ptr, newHeaderData);
+		return ptr;
+	}
+	else
+	{
+		return ptr;
+	}
+}
+
+char * const MemoryManager::CoalesceWithPreviousBlock(char * const ptr)
+{
+	if (IsPreviousBlockFree(ptr) && IsValidAddress(GetPreviousBlock(ptr)))
+	{
+
+		//	Remove previous block from free blocks
+		freeBlocks.remove((Node*)GetPreviousBlock(ptr));
+
+
+		//	Little trick:
+		//		Set the pointer to point to the previous free block
+		(char*)ptr = GetPreviousBlock(ptr);
+
+		//Update header
+		size_t newHeaderData = GetHeader(ptr) + GetHeader(GetNextBlock(ptr));
+		SetHeader(ptr, newHeaderData);
+		//Update footer
+		SetFooter(ptr, newHeaderData);
+
 		return ptr;
 	}
 	else

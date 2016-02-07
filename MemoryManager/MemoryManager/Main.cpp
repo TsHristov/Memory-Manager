@@ -30,9 +30,6 @@ int main()
 		std::cout << "Value of footer of Block No2: " << mngr.GetFooter((char*)pArr2) << "\n";
 
 
-		// Free block of size 40 bytes
-		mngr.Free((char*)pArr1);
-
 
 		std::cout << "Value of header of Block No1 after free: " << mngr.GetHeader((char*)pArr1) << "\n";
 
@@ -45,13 +42,33 @@ int main()
 
 		mngr.ForwardIteratationOverFreeBlocks();
 
+		mngr.Free((char*)pArr1);
+		
+		mngr.ForwardIteratationOverFreeBlocks();
+
 		mngr.Free((char*)pArr3);
 
-
-		std::cout << "Value of header of Block No3: " << mngr.GetHeader((char*)pArr3) << "\n";
-
-		std::cout << "Value of footer of Block No3: " << mngr.GetFooter((char*)pArr3) << "\n";
 		mngr.ForwardIteratationOverFreeBlocks();
+
+		mngr.Free((char*)pArr2);
+
+		mngr.ForwardIteratationOverFreeBlocks();
+
+		char * a = (char*)mngr.Malloc(100 * sizeof(char));
+
+		std::cout << "Value of header of a: " << mngr.GetHeaderRealSize((char*)a) << "\n";
+
+		std::cout << "Value of footer of a: " << mngr.GetFooterRealSize((char*)a) << "\n";
+
+		mngr.ForwardIteratationOverFreeBlocks();
+
+		mngr.Free((char*)a);
+
+		mngr.ForwardIteratationOverFreeBlocks();
+
+		/*std::cout << "Value of header of Block No3: " << mngr.GetHeader((char*)pArr3) << "\n";
+
+		std::cout << "Value of footer of Block No3: " << mngr.GetFooter((char*)pArr3) << "\n";*/
 	}
  
 	_CrtDumpMemoryLeaks();
