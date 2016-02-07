@@ -10,18 +10,17 @@
 MemoryManager::MemoryManager(size_t& size)
 {
 	//Allocate big chunk of memory
-	//memblock = new char[blockSize];
+	memblock = new char[size];
 
 	//Put header
 	size_t *header = (size_t*)memblock;
 	*header = size;
 
 	//Because the block is free put a Node structure
-	Node<char*> *block = (Node<char*>*)(memblock + sizeof(size_t*));
+	Node *block = (Node*)(memblock + sizeof(size_t*));
 	(char*)block->data = memblock + sizeof(size_t*);
 	block->next = NULL;
 	block->previous = NULL;
-	//block->data = memblock + sizeof(size_t*);
 	
 
 	//Put footer
@@ -43,7 +42,7 @@ char* MemoryManager::Malloc(size_t &size)
 	size_t sizeOfFreeBlock;
 	ForwardIteratationOverFreeBlocks();
 
-	for (Iterator<char*> it = freeBlocks.getIterator(); !it.end(); it.next())
+	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.next())
 	{
 		
 		sizeOfFreeBlock = GetHeader(it.getCurrent());
@@ -52,7 +51,7 @@ char* MemoryManager::Malloc(size_t &size)
 		{
 			pointerToBlock = it.getCurrent();
 			//Remove the node structure from the block so it`s payload can be used.
-			freeBlocks.remove((Node<char*>*) pointerToBlock);
+			freeBlocks.remove((Node*) pointerToBlock);
 			break;
 		}
 	}
@@ -82,7 +81,7 @@ char* MemoryManager::Malloc(size_t &size)
 	size_t *hdr = (size_t*)(pointerToBlock + size - sizeof(size_t*));
 	*hdr = freeBlockSize;
 
-	Node<char*> * block = (Node<char*>*)(pointerToBlock + size);
+	Node *block = (Node*)(pointerToBlock + size);
 	(char*)block->data = pointerToBlock + size;
 	block->next = NULL;
 	block->previous = NULL;
@@ -112,7 +111,7 @@ void MemoryManager::Free(char *ptr)
 	ForwardIteratationOverFreeBlocks();
 	
 	// Put free block structure into the unused payload space
-	Node<char*> *freeBlock = (Node<char*>*)ptr;
+	Node *freeBlock = (Node*)ptr;
 	(char*)freeBlock->data = ptr;
 	freeBlock->next = NULL;
 	freeBlock->previous = NULL;
@@ -198,7 +197,7 @@ void MemoryManager::MarkAsFree(char * const ptr)
 void MemoryManager::ForwardIteratationOverFreeBlocks()
 {
 	int counter = 0;
-	for (Iterator<char*> it = freeBlocks.getIterator(); !it.end(); it.next())
+	for (Iterator it = freeBlocks.getIterator(); !it.end(); it.next())
 	{
 		counter += 1;
 		std::cout << "Free block No " << counter << " : " << GetHeader(it.getCurrent()) << "\n";
@@ -242,7 +241,7 @@ char * const MemoryManager::CoalesceWithNextBlock(char * const ptr)
 	if (IsNextBlockFree(ptr) && IsValidAddress(GetNextBlock(ptr)))
 	{
 		//Remove next block from free blocks
-		freeBlocks.remove((Node<char*>*)GetNextBlock(ptr));
+		freeBlocks.remove((Node*)GetNextBlock(ptr));
 		//Update header
 		size_t newHeaderData = GetHeader(ptr) + GetHeader(GetNextBlock(ptr));
 		SetHeader(ptr, newHeaderData);

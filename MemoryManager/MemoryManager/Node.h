@@ -1,27 +1,13 @@
 #pragma once
-template<class T>
+/***
+*	This struct will be used to store the address of a free memory block.
+*	- data - the address of the current free memory block
+*	- previous - pointer to previous free memory block
+*	- next - pointer to next free memory block
+*/
 struct Node
 {
-	T const data;
-	Node<T> *previous;
-	Node<T> *next;
-
-public:
-	Node() :previous(NULL), next(NULL){}
-	~Node()
-	{
-		delete next;
-	}
-	Node(const T& data)
-	{
-		this->data = data;
-		this->previous = NULL;
-		this->next = NULL;
-	}
-	Node(const T& data, Node<T> *previous, Node<T> *next)
-	{
-		this->data = data;
-		this->previous = previous;
-		this->next = next;
-	}
+	char* const data;
+	Node *previous;
+	Node *next;
 };

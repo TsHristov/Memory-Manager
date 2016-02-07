@@ -1,27 +1,27 @@
 #pragma once
 #include "Node.h"
-template<class T>
+
 class Iterator
 {
 private:
-	Node<T> *pStart;
-	Node<T> *pCurrent;
+	Node *pStart;
+	Node *pCurrent;
 
 public:
-	Iterator(Node<T> *pStart)
+	Iterator(Node *pStart)
 	{
 		this->pStart = this->pCurrent = pStart;
 	}
 
 public:
-	const T  getCurrent() const
+	char*  getCurrent() const
 	{
 		return this->pCurrent->data;
 	}
-	void setCurrent(T const & Value)
+	/*void setCurrent(char* const & Value)
 	{
 		this->pCurrent->data = Value;
-	}
+	}*/
 	void next()
 	{
 		if (this->pCurrent)

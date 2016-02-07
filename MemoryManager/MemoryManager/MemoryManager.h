@@ -6,19 +6,20 @@ class MemoryManager
 {
 private:
 	//The starting big block of memory
-	char memblock[1024];
+	char *memblock;
 
 	//Doubly Linked list to store the pointers to the free blocks
-	DoublyLinkedList<char*> freeBlocks;
+	DoublyLinkedList freeBlocks;
 
 public:
 	MemoryManager(size_t&);
 	~MemoryManager()
 	{
-		/*if (memblock)
+		//The only allocated memory in the project.
+		if (memblock)
 		{
 			delete[] memblock;
-		}*/
+		}
 	}
 
 public:
